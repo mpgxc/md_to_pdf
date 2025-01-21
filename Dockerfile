@@ -10,7 +10,7 @@ COPY . /app
 
 RUN apt install wkhtmltopdf
 
-RUN pip install --no-cache-dir flask markdown pdfkit gunicorn
+RUN pip install --no-cache-dir flask markdown pdfkit gunicorn flask-cors
 
 EXPOSE 5000
 

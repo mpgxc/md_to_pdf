@@ -1,7 +1,19 @@
 version: "3.8"
 
 services:
-  markdown-to-pdf:
+  web:
+    build:
+      context: web/.
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - API_URL=http://api:5000
+      - NODE_ENV=production
+    depends_on:
+      - api
+
+  api:
     build: .
     ports:
       - "5000:5000"

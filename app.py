@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import markdown
 import pdfkit
 import os
 
 app = Flask(__name__)
 
+CORS(app)  
 
 def markdown_to_pdf(markdown_content, output_pdf_file):
     html_content = markdown.markdown(markdown_content)
@@ -64,6 +66,43 @@ def convert_markdown_to_pdf():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route("/convert/txt", methods=["POST"])
+def convert_markdown_text_to_pdf():
+    try:
+        if request.content_type != "text/plain":
+            return (
+                jsonify(
+                    {"error": "Tipo de conteúdo não suportado. Use 'text/plain'."}
+                ),
+                400,
+            )
+
+        markdown_content = request.data.decode("utf-8")
+
+        if not markdown_content:
+            return jsonify({"error": "Conteúdo Markdown não fornecido."}), 400
+
+        output_pdf_file = "output.pdf"
+
+        markdown_to_pdf(markdown_content, output_pdf_file)
+
+        with open(output_pdf_file, "rb") as pdf_file:
+            pdf_data = pdf_file.read()
+
+        os.remove(output_pdf_file)
+
+        return (
+            pdf_data,
+            200,
+            {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": 'attachment; filename="output.pdf"',
+            },
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
